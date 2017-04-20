@@ -21,13 +21,11 @@ const yargs   = require('yargs')
                   .demandOption(['thread-id', 'access-token'], 'Please provide both thread-id and access-token arguments')
                   .help()
                   .argv
-const file    = './thread.json'
 
-var thread_id = yargs['thread-id']
-var url = "https://graph.facebook.com/v2.3/"+thread_id+"/comments"
+const file    = 'thread.json'
 var thread = []
 var options = {
-  uri: url,
+  uri: "https://graph.facebook.com/v2.3/"+yargs['thread-id']+"/comments",
   qs: {
     access_token: yargs['access-token'],
     limit: 30,
@@ -50,12 +48,16 @@ function fbGet(opts) {
       } else {
         console.log("FAILURE: "+opts.uri)
         console.log("WE'RE ALL DONE")
-        fs.writeFileSync('thread.json', JSON.stringify(thread), 'utf8')
+        write(thread)
         return [];
       }
     })
     .catch(err => {
-      fs.writeFileSync('thread.json', JSON.stringify(thread), 'utf8')
       console.log(err)
+      write(thread)
     })
 }
+
+function write(json) {
+  fs.writeFileSync(file, JSON.stringify(thread), 'utf8')
+}`
