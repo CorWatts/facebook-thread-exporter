@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "global": "^4.3.2",
+    "js-beautify": "^1.6.12",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0",
+    "sleep": "^5.1.1",
+    "yargs": "^7.1.0"
+  }
+}
