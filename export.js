@@ -16,9 +16,9 @@ const fs      = require('fs')
 const sleep   = require('sleep').sleep
 const request = require('request-promise')
 const yargs   = require('yargs')
-                  .option('thread-id', { describe: 'The thread_id of your facebook thread'})
-                  .option('access-token', {describe: 'Your Facebook access_token'})
-                  .option('file', {describe: 'The output file name', default: 'thread.json'})
+                  .option('thread-id', { describe: 'The thread_id of your facebook thread', alias: 'i' })
+                  .option('access-token', {describe: 'Your Facebook access_token', alias: 't' })
+                  .option('file', {describe: 'The output file name', default: 'thread.json', alias: 'f' })
                   .demandOption(['thread-id', 'access-token'], 'Please provide both thread-id and access-token arguments')
                   .help()
                   .argv
@@ -35,27 +35,25 @@ let options = {
   json: true
 }
 
-fbGet(options)
+write(fbGet(options))
 
 
-function fbGet(opts) {
+function fbGet(opts, accum=[]) {
   request(opts)
     .then(res => {
       if(res && res.data && res.data && res.data.length > 0) {
         console.log("SUCCESS: "+opts.uri)
-        thread.push(...res.data)
         sleep(1)
-        return fbGet(_.merge(opts, {uri: res.paging.next}))
+        return fbGet(_.merge(opts, {uri: res.paging.next}), accum.push(...res.data))
       } else {
         console.log("FAILURE: "+opts.uri)
         console.log("WE'RE ALL DONE")
-        write(thread)
-        return [];
+        return []
       }
     })
     .catch(err => {
       console.log(err)
-      write(thread)
+      return accum
     })
 }
 
