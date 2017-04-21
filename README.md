@@ -5,6 +5,7 @@
 Options:
   --thread-id     The thread_id of your facebook thread               [required]
   --access-token  Your Facebook access_token                          [required]
+  --file          The output file name                  [default: "thread.json"]
   --help          Show help                                            [boolean]
 ```
 
