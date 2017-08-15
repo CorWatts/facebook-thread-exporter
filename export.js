@@ -1,4 +1,4 @@
-#!/bin/env node
+#!/usr/bin/env node
 
 /*
  * Go to https://developers.facebook.com/tools/explorer/
@@ -9,22 +9,21 @@
  * Copy and paste the access token into this script
  *
  * TODO: How does one find the thread id???
- *
  */
 
-const fs      = require('fs')
-const sleep   = require('sleep').sleep
-const request = require('request-promise')
-const yargs   = require('yargs')
-                  .option('thread-id', { describe: 'The thread_id of your facebook thread', alias: 'i' })
-                  .option('access-token', {describe: 'Your Facebook access_token', alias: 't' })
-                  .option('file', {describe: 'The output file name', default: 'thread.json', alias: 'f' })
-                  .demandOption(['thread-id', 'access-token'], 'Please provide both thread-id and access-token arguments')
-                  .help()
-                  .argv
-const file  = yargs.file
+const ndjson   = require('ndjson')
+const fs        = require('fs')
+const yargs    = require('yargs')
+                   .option('thread-id', { describe: 'The thread_id of your facebook thread', alias: 'i' })
+                   .option('access-token', {describe: 'Your Facebook access_token', alias: 't' })
+                   .option('file', {describe: 'The output file name', default: 'thread.json', alias: 'f' })
+                   .demandOption(['thread-id', 'access-token'], 'Please provide both thread-id and access-token arguments')
+                   .help()
+                   .argv
+const file     = yargs.file
 
-let thread  = []
+const download = require('./lib/download')
+
 let options = {
   uri: "https://graph.facebook.com/v2.3/"+yargs['thread-id']+"/comments",
   qs: {
@@ -35,28 +34,8 @@ let options = {
   json: true
 }
 
-write(fbGet(options))
-
-
-function fbGet(opts, accum=[]) {
-  request(opts)
-    .then(res => {
-      if(res && res.data && res.data && res.data.length > 0) {
-        console.log("SUCCESS: "+opts.uri)
-        sleep(1)
-        return fbGet(_.merge(opts, {uri: res.paging.next}), accum.push(...res.data))
-      } else {
-        console.log("FAILURE: "+opts.uri)
-        console.log("WE'RE ALL DONE")
-        return []
-      }
-    })
-    .catch(err => {
-      console.log(err)
-      return accum
-    })
-}
-
-function write(json) {
-  fs.writeFileSync(file, JSON.stringify(thread), 'utf8')
-}
+download(options)
+  .pipe(ndjson.stringify())
+  .pipe(fs.createWriteStream(file, {encoding: 'utf8', autoClose: false}))
+  .on('finish', () => console.log('Stream closed. All done.'))
+  .on('error', (e) => console.log(`Errored: ${e.message}`))
