@@ -1,5 +1,7 @@
 # Facebook Thread Exporter
 
+This repo and code is now deprecated. It relied on a part of Facebook's API that was removed long ago.
+
 ## Usage
 ```
 Options:
